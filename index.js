@@ -56,6 +56,39 @@ app.post('/create-page', [
     });
 });
 
+//edição das páginas
+app.get('/edit/:url', authenticate, (req, res) => {
+    const { url } = req.params;
+    res.render('edit', { url });
+});
+
+app.post('/edit-page/:url', [
+    check('content').notEmpty()
+], authenticate, (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).send('Erro de validação: ' + JSON.stringify(errors.array()));
+    }
+
+    const { content } = req.body;
+    const { url } = req.params;
+    const fileName = url.replace(/\//g, '-') + '.html';
+
+    const filePath = path.join(__dirname, 'pages', fileName);
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).send('Página não encontrada');
+    }
+
+    fs.writeFile(filePath, content, (err) => {
+        if (err) {
+            console.error('Erro ao salvar o arquivo: ', err);
+            res.status(500).send('Erro ao salvar o arquivo');
+        } else {
+            res.send(`Página ${url} editada com sucesso`);
+        }
+    });
+});
+
 app.get('/login', (req, res) => {
     res.render('login', {});
 });
