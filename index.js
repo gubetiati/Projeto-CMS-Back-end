@@ -72,7 +72,7 @@ app.post('/edit-page/:url', [
 
     const { content } = req.body;
     const { url } = req.params;
-    const fileName = url.replace(/\//g, '-') + '.html';
+    const fileName = url.replace(/\//g, '-') + '.txt';
 
     const filePath = path.join(__dirname, 'pages', fileName);
     if (!fs.existsSync(filePath)) {
@@ -113,8 +113,24 @@ app.get('/logout', (req, res) => {
     });
 });
 
+// Rotas relacionadas à administração
 app.get('/admin', authenticate, (req, res) => {
-    res.render('admin', {});
+    const pagesDirectory = path.join(__dirname, 'pages');
+    fs.readdir(pagesDirectory, (err, files) => {
+        if (err) {
+            console.error('Erro ao ler o diretório de páginas:', err);
+            res.status(500).send('Erro ao ler o diretório de páginas');
+            return;
+        }
+        
+        const txtFiles = files.filter(file => file.endsWith('.txt'));
+        
+        const pages = txtFiles.map(file => {
+            return { url: path.basename(file, path.extname(file)) };
+        });
+
+        res.render('admin', { pages });
+    });
 });
 
 const PORT = process.env.PORT || 3000;
