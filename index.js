@@ -28,7 +28,7 @@ function authenticate(req, res, next) {
 }
 
 // Configuração do mecanismo de template Mustache
-app.engine('mustache', mustacheExpress());
+app.engine('mustache', engine);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'mustache');
 

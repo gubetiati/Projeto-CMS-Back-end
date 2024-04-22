@@ -4,9 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <style>
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+        }
+
+        .banner {
+            background-color: #00438b;
+            height: 8vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .titulo {
+            font-size: 25px;
+            color: white;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10vh;
+        }
+
+        form div {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 5px;
+            width: 80px;
+            text-align: right;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 200px; 
+            margin-right: 70px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #00438b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <div>
+    <div class="banner">
         <h2 class="titulo">CMS</h2>
     </div>
     
