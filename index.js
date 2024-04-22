@@ -1,19 +1,17 @@
-const express = require('express')
-const session = require('express-session')
-const dotenv = require('dotenv')
-const bodyParser = require('body-parser')
+const express = require('express');
+const session = require('express-session');
+const dotenv = require('dotenv');
+const path = require('path');
+const bodyParser = require('body-parser');
+const { check, validationResult } = require('express-validator');
+const fs = require('fs');
 const mustacheExpress = require('mustache-express');
-const path = require('path')
 
-dotenv.config()
-console.log(process.env);
-
-
+dotenv.config();
 
 const engine = mustacheExpress()
-const app = express()
+const app = express();
 
-//configurações de middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
     secret: 'chavesecreta321',
@@ -21,7 +19,6 @@ app.use(session({
     saveUninitialized: true
 }));
 
-// Função de middleware para autenticação
 function authenticate(req, res, next) {
     if (req.session.authenticated) {
         next();
@@ -31,13 +28,36 @@ function authenticate(req, res, next) {
 }
 
 // Configuração do mecanismo de template Mustache
-app.engine('mustache', engine);
+app.engine('mustache', mustacheExpress());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'mustache');
 
-// Rota para renderizar o formulário de login
+// Rota para criar página
+app.post('/create-page', [
+    check('url').matches(/^[\w\/\-]+$/), // Permitindo letras, números, traços e barras na URL
+    check('content').notEmpty()
+], authenticate, (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).send('Erro de validação: ' + JSON.stringify(errors.array()));
+    }
+    
+    const { url, content } = req.body;
+    const fileName = url.replace(/\//g, '-') + '.txt'; // Usando a URL como nome do arquivo
+
+    // Salvar o conteúdo da página em um arquivo de texto na pasta 'pages'
+    fs.writeFile(path.join(__dirname, 'pages', fileName), content, (err) => {
+        if (err) {
+            console.error('Erro ao salvar o arquivo:', err);
+            res.status(500).send('Erro ao salvar o arquivo');
+        } else {
+            res.send(`Página criada com sucesso! URL: ${url}`);
+        }
+    });
+});
+
 app.get('/login', (req, res) => {
-    res.render('login', {}); // Renderiza a página de login
+    res.render('login', {});
 });
 
 app.post('/login', (req, res) => {
@@ -45,15 +65,25 @@ app.post('/login', (req, res) => {
     if (username === process.env.USER && password === process.env.PASSWORD) {
         req.session.authenticated = true;
         res.redirect('/admin');
-        
     } else {
         res.send('Credenciais inválidas');
     }
 });
 
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error(err);
+        } else {
+            res.redirect('/login');
+        }
+    });
+});
 
+app.get('/admin', authenticate, (req, res) => {
+    res.render('admin', {});
+});
 
-//Porta
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Rodando na porta ${PORT}`);
