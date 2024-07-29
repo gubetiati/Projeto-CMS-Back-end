@@ -110,6 +110,48 @@ app.post('/delete-page/:url', authenticate, (req, res) => {
 });
 
 
+// Rota para visualizar o conteúdo das páginas (não é necessário estar logado)
+app.get('/pages/:url', (req, res) => {
+    const { url } = req.params;
+    const fileName = url.replace(/\//g, '-') + '.txt';
+    const filePath = path.join(__dirname, 'pages', fileName);
+
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).send('Página não encontrada');
+    }
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Erro ao ler o arquivo: ', err);
+            res.status(500).send('Erro ao ler o arquivo');
+        } else {
+            res.send(`<html><body><h1>${url}</h1><pre>${data}</pre></body></html>`);
+        }
+    });
+});
+
+app.get('/', (req, res) => {
+    const pagesDirectory = path.join(__dirname, 'pages');
+    fs.readdir(pagesDirectory, (err, files) => {
+        if (err) {
+            console.error('Erro ao ler o diretório de páginas:', err);
+            res.status(500).send('Erro ao ler o diretório de páginas');
+            return;
+        }
+
+        const txtFiles = files.filter(file => file.endsWith('.txt'));
+
+        const pages = txtFiles.map(file => {
+            return { url: path.basename(file, path.extname(file)) };
+        });
+
+        res.render('home', { pages });
+    });
+});
+
+
+
+
 app.get('/login', (req, res) => {
     res.render('login', {});
 });
