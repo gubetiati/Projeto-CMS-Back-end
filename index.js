@@ -9,16 +9,20 @@ const mustacheExpress = require('mustache-express');
 
 dotenv.config();
 
-const engine = mustacheExpress()
+const engine = mustacheExpress();
 const app = express();
 
+// Middleware para parsear corpos de requisições URL-encoded
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Configuração de sessões
 app.use(session({
     secret: 'chavesecreta321',
     resave: false,
     saveUninitialized: true
 }));
 
+// Middleware de autenticação
 function authenticate(req, res, next) {
     if (req.session.authenticated) {
         next();
@@ -32,11 +36,11 @@ app.engine('mustache', engine);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'mustache');
 
-// Rota para criar página
+// Rota para criar uma nova página
 app.post('/create-page', [
-    check('url').matches(/^[\w\/\-]+$/),
-    check('content').notEmpty(),
-    check('tags').optional().isString() // Validação opcional para tags
+    check('url').matches(/^[\w\/\-]+$/), // Validação da URL
+    check('content').notEmpty(),         // Validação do conteúdo
+    check('tags').optional().isString()  // Validação opcional das tags
 ], authenticate, (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -45,9 +49,9 @@ app.post('/create-page', [
 
     const { url, content, tags } = req.body;
     const fileName = url.replace(/\//g, '-') + '.txt';
-    const tagsFileName = url.replace(/\//g, '-') + '.json'; // Armazenando tags em JSON
+    const tagsFileName = url.replace(/\//g, '-') + '.json';
 
-    // Salvar o conteúdo da página em um arquivo de texto
+    // Salvar o conteúdo da página
     fs.writeFile(path.join(__dirname, 'pages', fileName), content, (err) => {
         if (err) {
             console.error('Erro ao salvar o arquivo:', err);
@@ -55,7 +59,7 @@ app.post('/create-page', [
             return;
         }
 
-        // Salvar as tags em um arquivo JSON
+        // Salvar as tags, se existirem
         fs.writeFile(path.join(__dirname, 'pages', tagsFileName), JSON.stringify({ tags: tags.split(',').map(tag => tag.trim()) }), (err) => {
             if (err) {
                 console.error('Erro ao salvar as tags:', err);
@@ -68,8 +72,6 @@ app.post('/create-page', [
     });
 });
 
-
-//edição das páginas
 // Rota para exibir o formulário de edição de uma página
 app.get('/edit/:url', authenticate, (req, res) => {
     const { url } = req.params;
@@ -99,6 +101,7 @@ app.get('/edit/:url', authenticate, (req, res) => {
     });
 });
 
+// Rota para processar a edição da página
 app.post('/edit-page/:url', [
     check('content').notEmpty(),
     check('tags').optional().isString()
@@ -137,19 +140,15 @@ app.post('/edit-page/:url', [
                 res.send(`Página ${url} editada com sucesso`);
             });
         } else {
-            // Se não houver tags, apenas confirme a atualização do conteúdo
             res.send(`Página ${url} editada com sucesso`);
         }
     });
 });
 
-
-
-
-// Rota para excluir página
+// Rota para excluir uma página
 app.post('/delete-page/:url', authenticate, (req, res) => {
     const { url } = req.params;
-    const fileName = url.replace(/\//g, '-') + '.txt'; // Corrigido para .txt
+    const fileName = url.replace(/\//g, '-') + '.txt';
     const filePath = path.join(__dirname, 'pages', fileName);
 
     if (!fs.existsSync(filePath)) {
@@ -158,14 +157,13 @@ app.post('/delete-page/:url', authenticate, (req, res) => {
 
     fs.unlink(filePath, (err) => {
         if (err) {
-            console.error('Erro ao excluir o arquivo: ', err);
+            console.error('Erro ao excluir o arquivo:', err);
             res.status(500).send('Erro ao excluir o arquivo');
         } else {
             res.send(`Página ${url} excluída com sucesso`);
         }
     });
 });
-
 
 // Rota para visualizar o conteúdo das páginas (não é necessário estar logado)
 app.get('/pages/:url', (req, res) => {
@@ -206,7 +204,7 @@ app.get('/pages/:url', (req, res) => {
     });
 });
 
-
+// Rota para a página inicial (listar páginas)
 app.get('/', (req, res) => {
     const pagesDirectory = path.join(__dirname, 'pages');
     fs.readdir(pagesDirectory, (err, files) => {
@@ -226,13 +224,12 @@ app.get('/', (req, res) => {
     });
 });
 
-
-
-
+// Rota para exibir o formulário de login
 app.get('/login', (req, res) => {
     res.render('login', {});
 });
 
+// Rota para processar o login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     if (username === process.env.USER && password === process.env.PASSWORD) {
@@ -243,6 +240,7 @@ app.post('/login', (req, res) => {
     }
 });
 
+// Rota para logout
 app.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -253,7 +251,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Rotas relacionadas à administração
+// Rota para a administração (apenas acessível para administradores)
 app.get('/admin', authenticate, (req, res) => {
     const pagesDirectory = path.join(__dirname, 'pages');
     fs.readdir(pagesDirectory, (err, files) => {
