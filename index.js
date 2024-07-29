@@ -89,6 +89,27 @@ app.post('/edit-page/:url', [
     });
 });
 
+// Rota para excluir página
+app.post('/delete-page/:url', authenticate, (req, res) => {
+    const { url } = req.params;
+    const fileName = url.replace(/\//g, '-') + '.txt'; // Corrigido para .txt
+    const filePath = path.join(__dirname, 'pages', fileName);
+
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).send('Página não encontrada');
+    }
+
+    fs.unlink(filePath, (err) => {
+        if (err) {
+            console.error('Erro ao excluir o arquivo: ', err);
+            res.status(500).send('Erro ao excluir o arquivo');
+        } else {
+            res.send(`Página ${url} excluída com sucesso`);
+        }
+    });
+});
+
+
 app.get('/login', (req, res) => {
     res.render('login', {});
 });
