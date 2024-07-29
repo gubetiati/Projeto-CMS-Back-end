@@ -64,7 +64,6 @@
         .page-link:hover {
             text-decoration: underline;
         }
-
     </style>
 </head>
 <body>
@@ -76,7 +75,10 @@
         <h1>Página Inicial</h1>
         <ul class="page-list">
             {{#pages}}
-            <li><a class="page-link" href="/pages/{{url}}">{{url}}</a></li>
+            <li>
+                <a class="page-link" href="/pages/{{url}}">{{url}}</a>
+                <p>{{tags}}</p> <!-- Exibe as tags -->
+            </li>
             {{/pages}}
         </ul>
     </div>
