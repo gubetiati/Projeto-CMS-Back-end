@@ -26,8 +26,36 @@
             z-index: 1000;
         }
 
+        .titulo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+
         .titulo {
             font-size: 25px;
+            color: white;
+        }
+
+        .login-container {
+            position: absolute;
+            right: 20px;
+        }
+
+        .login-button {
+            background-color: white;
+            color: #00438b;
+            border: 2px solid #00438b;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .login-button:hover {
+            background-color: #00438b;
             color: white;
         }
 
@@ -68,7 +96,12 @@
 </head>
 <body>
     <div class="banner">
-        <h2 class="titulo">CMS</h2>
+        <div class="titulo-container">
+            <h2 class="titulo">CMS</h2>
+            <div class="login-container">
+                <a class="login-button" href="/login">Login</a>
+            </div>
+        </div>
     </div>
 
     <div class="conteudo">

@@ -12,17 +12,17 @@ dotenv.config();
 const engine = mustacheExpress();
 const app = express();
 
-// Middleware para parsear corpos de requisições URL-encoded
+// middleware para parsear corpos de requisições URL-encoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Configuração de sessões
+// configuração de sessões
 app.use(session({
     secret: 'chavesecreta321',
     resave: false,
     saveUninitialized: true
 }));
 
-// Middleware de autenticação
+// middleware de autenticação
 function authenticate(req, res, next) {
     if (req.session.authenticated) {
         next();
@@ -31,12 +31,12 @@ function authenticate(req, res, next) {
     }
 }
 
-// Configuração do mecanismo de template Mustache
+// configuração do mecanismo de template Mustache
 app.engine('mustache', engine);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'mustache');
 
-// Rota para criar uma nova página
+// rota para criar uma nova página
 app.post('/create-page', [
     check('url').matches(/^[\w\/\-]+$/), // Validação da URL
     check('content').notEmpty(),         // Validação do conteúdo
@@ -51,7 +51,7 @@ app.post('/create-page', [
     const fileName = url.replace(/\//g, '-') + '.txt';
     const tagsFileName = url.replace(/\//g, '-') + '.json';
 
-    // Salvar o conteúdo da página
+    // salvar o conteúdo da página
     fs.writeFile(path.join(__dirname, 'pages', fileName), content, (err) => {
         if (err) {
             console.error('Erro ao salvar o arquivo:', err);
@@ -59,7 +59,7 @@ app.post('/create-page', [
             return;
         }
 
-        // Salvar as tags, se existirem
+        // salvar as tags, se existirem
         fs.writeFile(path.join(__dirname, 'pages', tagsFileName), JSON.stringify({ tags: tags.split(',').map(tag => tag.trim()) }), (err) => {
             if (err) {
                 console.error('Erro ao salvar as tags:', err);
@@ -72,7 +72,7 @@ app.post('/create-page', [
     });
 });
 
-// Rota para exibir o formulário de edição de uma página
+// rota para exibir o formulário de edição de uma página
 app.get('/edit/:url', authenticate, (req, res) => {
     const { url } = req.params;
     const fileName = url.replace(/\//g, '-') + '.txt';
@@ -101,7 +101,7 @@ app.get('/edit/:url', authenticate, (req, res) => {
     });
 });
 
-// Rota para processar a edição da página
+// rota para processar a edição da página
 app.post('/edit-page/:url', [
     check('content').notEmpty(),
     check('tags').optional().isString()
@@ -122,14 +122,14 @@ app.post('/edit-page/:url', [
         return res.status(404).send('Página não encontrada');
     }
 
-    // Atualizar o conteúdo da página
+    // atualizar o conteúdo da página
     fs.writeFile(filePath, content, (err) => {
         if (err) {
             console.error('Erro ao salvar o conteúdo do arquivo:', err);
             return res.status(500).send('Erro ao salvar o conteúdo do arquivo');
         }
 
-        // Atualizar as tags se fornecidas
+        // atualizar as tags se fornecidas
         if (tags !== undefined) {
             fs.writeFile(tagsFilePath, JSON.stringify({ tags: tags.split(',').map(tag => tag.trim()) }), (err) => {
                 if (err) {
@@ -145,7 +145,7 @@ app.post('/edit-page/:url', [
     });
 });
 
-// Rota para excluir uma página
+// rota para excluir uma página
 app.post('/delete-page/:url', authenticate, (req, res) => {
     const { url } = req.params;
     const fileName = url.replace(/\//g, '-') + '.txt';
@@ -165,7 +165,7 @@ app.post('/delete-page/:url', authenticate, (req, res) => {
     });
 });
 
-// Rota para visualizar o conteúdo das páginas (não é necessário estar logado)
+// rota para visualizar o conteúdo das páginas (não é necessário estar logado)
 app.get('/pages/:url', (req, res) => {
     const { url } = req.params;
     const fileName = url.replace(/\//g, '-') + '.txt';
@@ -204,7 +204,7 @@ app.get('/pages/:url', (req, res) => {
     });
 });
 
-// Rota para a página inicial (listar páginas)
+// rota para a página inicial (listar páginas)
 app.get('/', (req, res) => {
     const pagesDirectory = path.join(__dirname, 'pages');
     fs.readdir(pagesDirectory, (err, files) => {
@@ -224,12 +224,12 @@ app.get('/', (req, res) => {
     });
 });
 
-// Rota para exibir o formulário de login
+// rota para exibir o formulário de login
 app.get('/login', (req, res) => {
     res.render('login', {});
 });
 
-// Rota para processar o login
+// rota para processar o login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     if (username === process.env.USER && password === process.env.PASSWORD) {
@@ -240,7 +240,7 @@ app.post('/login', (req, res) => {
     }
 });
 
-// Rota para logout
+// rota para logout
 app.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -251,7 +251,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Rota para a administração (apenas acessível para administradores)
+// rota para a administração (apenas acessível para administradores)
 app.get('/admin', authenticate, (req, res) => {
     const pagesDirectory = path.join(__dirname, 'pages');
     fs.readdir(pagesDirectory, (err, files) => {
