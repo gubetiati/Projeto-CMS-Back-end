@@ -25,6 +25,9 @@ app.engine('mustache', engine);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'mustache');
 
+// Servir arquivos estáticos da pasta 'assets'
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+
 // Importa e usa as rotas
 const routes = require('./routes/index');
 app.use(routes);
